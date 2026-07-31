@@ -1,0 +1,23 @@
+{
+	"required": true,
+	"package": "com.choculaterie.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"BlockStateBaseMixin",
+		"CommandsMixin",
+		"EntityMixin",
+		"LevelChunkMixin",
+		"LevelMixin",
+		"LevelTicksMixin",
+		"LivingEntityMixin",
+		"PistonMovingBlockEntityMixin",
+		"PlayerMixin",
+		"PrimedTntMixin",
+		"ServerExplosionMixin",
+		"ServerLevelMixin",
+		"ServerPlayerGameModeMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

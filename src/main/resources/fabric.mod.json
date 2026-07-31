@@ -1,0 +1,35 @@
+{
+	"schemaVersion": 1,
+	"id": "ctrl-z",
+	"version": "${version}",
+	"name": "Ctrl-Z",
+	"description": "Undo and redo",
+	"authors": [
+		"Choculat"
+	],
+	"contact": {
+		"homepage": "https://choculaterie.com/",
+		"sources": "https://github.com/Choculaterie/ctrl-z",
+		"issues": "https://github.com/Choculaterie/ctrl-z/issues"
+	},
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.choculaterie.CtrlZ"
+		],
+		"client": [
+			"com.choculaterie.CtrlZClient"
+		]
+	},
+	"mixins": [
+		"ctrl-z.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.5",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*",
+		"vanilib": ">=0.2.0"
+	}
+}
