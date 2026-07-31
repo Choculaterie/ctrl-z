@@ -2,6 +2,7 @@ package com.choculaterie.mixin;
 
 import com.choculaterie.history.BlockHistory;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.ticks.LevelTicks;
 import net.minecraft.world.ticks.ScheduledTick;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +15,7 @@ public abstract class LevelTicksMixin {
 
 	@Inject(method = "schedule", at = @At("HEAD"))
 	private void ctrlz$captureSchedule(ScheduledTick<?> tick, CallbackInfo ci) {
-		if (BlockHistory.isTracking() && tick.type() instanceof Block) {
+		if (BlockHistory.isTracking() && (tick.type() instanceof Block || tick.type() instanceof Fluid)) {
 			BlockHistory.watchBlock(tick.pos());
 		}
 	}

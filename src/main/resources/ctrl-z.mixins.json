@@ -6,6 +6,7 @@
 		"BlockStateBaseMixin",
 		"CommandsMixin",
 		"EntityMixin",
+		"FluidStateMixin",
 		"LevelChunkMixin",
 		"LevelMixin",
 		"LevelTicksMixin",

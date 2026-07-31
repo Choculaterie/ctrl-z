@@ -87,4 +87,27 @@ public abstract class ServerPlayerGameModeMixin {
 		}
 		BlockHistory.end();
 	}
+
+	@Unique
+	private ItemStack ctrlz$useItemHeldBefore;
+
+	@Unique
+	private InteractionHand ctrlz$useItemHand;
+
+	@Inject(method = "useItem", at = @At("HEAD"))
+	private void ctrlz$beginUseItem(ServerPlayer player, Level level, ItemStack itemStack, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+		BlockHistory.begin();
+		BlockHistory.markActor(player);
+		ctrlz$useItemHand = hand;
+		ctrlz$useItemHeldBefore = itemStack.copy();
+	}
+
+	@Inject(method = "useItem", at = @At("RETURN"))
+	private void ctrlz$endUseItem(ServerPlayer player, Level level, ItemStack itemStack, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+		if (ctrlz$useItemHeldBefore != null) {
+			BlockHistory.recordHeldItemChange(player, ctrlz$useItemHeldBefore, player.getItemInHand(ctrlz$useItemHand));
+			ctrlz$useItemHeldBefore = null;
+		}
+		BlockHistory.end();
+	}
 }
