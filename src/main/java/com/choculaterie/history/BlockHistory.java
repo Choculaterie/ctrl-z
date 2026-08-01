@@ -4,15 +4,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityProcessor;
+import java.util.function.Function;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -23,8 +21,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.TagValueInput;
-import net.minecraft.world.level.storage.TagValueOutput;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -318,16 +314,14 @@ public final class BlockHistory {
 
 	public static CompoundTag snapshotEntity(Entity entity) {
 		try {
-			Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+			ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 			if (id == null) {
 				return null;
 			}
-			try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), com.choculaterie.CtrlZ.LOGGER)) {
-				TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.level().registryAccess());
-				output.putString("id", id.toString());
-				entity.saveWithoutId(output);
-				return output.buildResult();
-			}
+			CompoundTag tag = new CompoundTag();
+			tag.putString("id", id.toString());
+			entity.saveWithoutId(tag);
+			return tag;
 		} catch (Throwable t) {
 			com.choculaterie.CtrlZ.LOGGER.error("Failed to snapshot entity {}", entity, t);
 			return null;
@@ -549,8 +543,8 @@ public final class BlockHistory {
 
 		if (existing instanceof ServerPlayer player) {
 			if (target != null) {
-				try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(player.problemPath(), com.choculaterie.CtrlZ.LOGGER)) {
-					player.load(TagValueInput.create(reporter, level.registryAccess(), target));
+				try {
+					player.load(target);
 					player.connection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
 					if (player.getHealth() <= 0.0F) {
 						player.die(player.damageSources().genericKill());
@@ -569,7 +563,7 @@ public final class BlockHistory {
 		}
 		if (target != null) {
 			Entity entity = EntityType.loadEntityRecursive(
-				target, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), EntityProcessor.NOP
+				target, level, EntitySpawnReason.COMMAND, Function.identity()
 			);
 			if (entity != null) {
 				if (entity instanceof PrimedTnt tnt && tnt.getFuse() <= 0) {
@@ -594,7 +588,7 @@ public final class BlockHistory {
 			return;
 		}
 		Entity gone = EntityType.loadEntityRecursive(
-			original, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), EntityProcessor.NOP
+			original, level, EntitySpawnReason.COMMAND, Function.identity()
 		);
 		if (gone instanceof ItemEntity itemEntity) {
 			removeMatching(actor, itemEntity.getItem());
