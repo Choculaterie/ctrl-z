@@ -5,11 +5,11 @@ import com.choculaterie.keybind.KeyCombo;
 import com.choculaterie.keybind.KeybindSettings;
 import com.choculaterie.keybind.ModKeybindings;
 import com.choculaterie.network.UndoRedoPayload;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
 import org.lwjgl.glfw.GLFW;
 
 public class CtrlZClient implements ClientModInitializer {
@@ -27,7 +27,7 @@ public class CtrlZClient implements ClientModInitializer {
 			}
 		}
 
-		if (client.gui.screen() != null || client.player == null) {
+		if (client.screen != null || client.player == null) {
 			return;
 		}
 		if (KeybindSettings.isCreativeOnly() && !client.player.isCreative()) {
@@ -54,7 +54,7 @@ public class CtrlZClient implements ClientModInitializer {
 		}
 		boolean containsOpenMenuKey = false;
 		for (int key : keys) {
-			if (ModKeybindings.OPEN_MENU_KEY_BINDING.matches(InputConstants.Type.KEYSYM.getOrCreate(key))) {
+			if (ModKeybindings.OPEN_MENU_KEY_BINDING.matches(new KeyEvent(key, 0, 0))) {
 				containsOpenMenuKey = true;
 				break;
 			}
@@ -67,10 +67,10 @@ public class CtrlZClient implements ClientModInitializer {
 	}
 
 	private static void toggleScreen(Minecraft client) {
-		if (client.gui.screen() instanceof CtrlZScreen) {
-			client.gui.setScreen(null);
+		if (client.screen instanceof CtrlZScreen) {
+			client.setScreen(null);
 		} else {
-			client.gui.setScreen(new CtrlZScreen());
+			client.setScreen(new CtrlZScreen());
 		}
 	}
 }

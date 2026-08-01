@@ -9,7 +9,7 @@ import com.choculaterie.vanilib.gui.widget.CustomButton;
 import com.choculaterie.vanilib.gui.widget.CustomTextField;
 import com.choculaterie.vanilib.gui.widget.ToggleButton;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -187,18 +187,18 @@ public class CtrlZScreen extends Screen {
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
 		context.fill(0, 0, this.width, this.height, UITheme.Colors.PANEL_BG);
-		super.extractRenderState(context, mouseX, mouseY, delta);
+		super.render(context, mouseX, mouseY, delta);
 
 		int titleX = (this.width - this.font.width(TITLE)) / 2;
-		context.text(this.font, TITLE, titleX, titleY, UITheme.Colors.TEXT_PRIMARY);
+		context.drawString(this.font, TITLE, titleX, titleY, UITheme.Colors.TEXT_PRIMARY);
 
-		context.text(this.font, "Undo key:", contentX, undoButton.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
-		context.text(this.font, "Redo key:", contentX, redoButton.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
-		context.text(this.font, "History (" + unitLabel(HistorySettings.getUnit()).toLowerCase(Locale.ROOT) + "):",
+		context.drawString(this.font, "Undo key:", contentX, undoButton.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
+		context.drawString(this.font, "Redo key:", contentX, redoButton.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
+		context.drawString(this.font, "History (" + unitLabel(HistorySettings.getUnit()).toLowerCase(Locale.ROOT) + "):",
 			contentX, historyField.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
-		context.text(this.font, "Creative only:", contentX, creativeOnlyToggle.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
+		context.drawString(this.font, "Creative only:", contentX, creativeOnlyToggle.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
 	}
 
 	@Override
@@ -210,7 +210,7 @@ public class CtrlZScreen extends Screen {
 	public void onClose() {
 		CustomTextField.restoreMinecraftCharCallback();
 		if (this.minecraft != null) {
-			this.minecraft.gui.setScreen(null);
+			this.minecraft.setScreen(null);
 		}
 	}
 }
