@@ -210,7 +210,7 @@ public class CtrlZScreen extends Screen {
 	public void onClose() {
 		CustomTextField.restoreMinecraftCharCallback();
 		if (this.minecraft != null) {
-			this.minecraft.gui.setScreen(null);
+			this.minecraft.setScreen(null);
 		}
 	}
 }

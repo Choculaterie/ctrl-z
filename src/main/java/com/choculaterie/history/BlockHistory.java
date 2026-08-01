@@ -12,7 +12,6 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -569,7 +568,7 @@ public final class BlockHistory {
 		}
 		if (target != null) {
 			Entity entity = EntityType.loadEntityRecursive(
-				target, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), EntityProcessor.NOP
+				target, level, EntitySpawnReason.COMMAND, EntityProcessor.NOP
 			);
 			if (entity != null) {
 				if (entity instanceof PrimedTnt tnt && tnt.getFuse() <= 0) {
@@ -594,7 +593,7 @@ public final class BlockHistory {
 			return;
 		}
 		Entity gone = EntityType.loadEntityRecursive(
-			original, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), EntityProcessor.NOP
+			original, level, EntitySpawnReason.COMMAND, EntityProcessor.NOP
 		);
 		if (gone instanceof ItemEntity itemEntity) {
 			removeMatching(actor, itemEntity.getItem());
