@@ -2,8 +2,7 @@ package com.choculaterie.mixin;
 
 import com.choculaterie.history.BlockHistory;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,7 +17,7 @@ public abstract class FluidStateMixin {
 	private boolean ctrlz$tracking;
 
 	@Inject(method = "tick", at = @At("HEAD"))
-	private void ctrlz$begin(ServerLevel level, BlockPos pos, BlockState blockState, CallbackInfo ci) {
+	private void ctrlz$begin(Level level, BlockPos pos, CallbackInfo ci) {
 		ctrlz$tracking = BlockHistory.isBlockWatched(pos);
 		if (ctrlz$tracking) {
 			BlockHistory.continueBlockChain(pos);
@@ -26,7 +25,7 @@ public abstract class FluidStateMixin {
 	}
 
 	@Inject(method = "tick", at = @At("RETURN"))
-	private void ctrlz$end(ServerLevel level, BlockPos pos, BlockState blockState, CallbackInfo ci) {
+	private void ctrlz$end(Level level, BlockPos pos, CallbackInfo ci) {
 		if (ctrlz$tracking) {
 			BlockHistory.end();
 			ctrlz$tracking = false;

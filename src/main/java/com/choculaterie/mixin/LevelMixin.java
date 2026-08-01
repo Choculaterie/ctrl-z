@@ -18,23 +18,23 @@ public abstract class LevelMixin {
 		method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z",
 		at = @At(
 			value = "INVOKE",
-			target = "Lnet/minecraft/world/level/chunk/LevelChunk;setBlockState(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Lnet/minecraft/world/level/block/state/BlockState;"
+			target = "Lnet/minecraft/world/level/chunk/LevelChunk;setBlockState(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;"
 		)
 	)
-	private BlockState ctrlz$captureAndSetBlockState(LevelChunk chunk, BlockPos pos, BlockState newState, int flags) {
+	private BlockState ctrlz$captureAndSetBlockState(LevelChunk chunk, BlockPos pos, BlockState newState, boolean isMoving) {
 		Level self = (Level) (Object) this;
 		if (!BlockHistory.isTracking() || !(self instanceof ServerLevel level)) {
-			return chunk.setBlockState(pos, newState, flags);
+			return chunk.setBlockState(pos, newState, isMoving);
 		}
 
 		BlockState oldState = level.getBlockState(pos);
 		if (oldState == newState) {
-			return chunk.setBlockState(pos, newState, flags);
+			return chunk.setBlockState(pos, newState, isMoving);
 		}
 
 		CompoundTag oldNbt = BlockHistory.snapshotBlockEntity(level, pos);
 		int slot = BlockHistory.reserveBlock(level, pos, oldState, oldNbt, newState);
-		BlockState result = chunk.setBlockState(pos, newState, flags);
+		BlockState result = chunk.setBlockState(pos, newState, isMoving);
 		if (result != null) {
 			CompoundTag newNbt = BlockHistory.snapshotBlockEntity(level, pos);
 			BlockHistory.finalizeBlock(slot, newNbt);

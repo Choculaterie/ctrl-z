@@ -56,4 +56,11 @@ public abstract class BlockStateBaseMixin {
 			ctrlz$triggerTracking = false;
 		}
 	}
+
+	@Inject(method = "onPlace", at = @At("HEAD"), cancellable = true)
+	private void ctrlz$skipOnPlaceDuringQuietRestore(Level level, BlockPos pos, net.minecraft.world.level.block.state.BlockState oldState, boolean isMoving, CallbackInfo ci) {
+		if (BlockHistory.isQuietRestore()) {
+			ci.cancel();
+		}
+	}
 }

@@ -27,8 +27,8 @@ public abstract class LivingEntityMixin {
 	@Unique
 	private InteractionHand ctrlz$useHand;
 
-	@Inject(method = "hurtServer", at = @At("HEAD"))
-	private void ctrlz$beginHurt(ServerLevel level, DamageSource source, float damage, CallbackInfoReturnable<Boolean> cir) {
+	@Inject(method = "hurt", at = @At("HEAD"))
+	private void ctrlz$beginHurt(DamageSource source, float damage, CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity self = (LivingEntity) (Object) this;
 		if (self instanceof ServerPlayer || BlockHistory.isTracking()) {
 			BlockHistory.begin();
@@ -36,11 +36,11 @@ public abstract class LivingEntityMixin {
 		}
 	}
 
-	@Inject(method = "hurtServer", at = @At("RETURN"))
-	private void ctrlz$endHurt(ServerLevel level, DamageSource source, float damage, CallbackInfoReturnable<Boolean> cir) {
+	@Inject(method = "hurt", at = @At("RETURN"))
+	private void ctrlz$endHurt(DamageSource source, float damage, CallbackInfoReturnable<Boolean> cir) {
 		LivingEntity self = (LivingEntity) (Object) this;
 		if (ctrlz$beforeHurt != null) {
-			if (!self.isRemoved()) {
+			if (!self.isRemoved() && self.level() instanceof ServerLevel level) {
 				BlockHistory.recordEntityModified(level, self.getUUID(), ctrlz$beforeHurt, BlockHistory.snapshotEntity(self));
 				if (!(self instanceof ServerPlayer) && self.isDeadOrDying()) {
 					BlockHistory.watch(self.getUUID());
