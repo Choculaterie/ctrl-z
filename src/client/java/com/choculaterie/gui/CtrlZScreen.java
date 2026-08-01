@@ -9,11 +9,10 @@ import com.choculaterie.vanilib.gui.widget.CustomButton;
 import com.choculaterie.vanilib.gui.widget.CustomTextField;
 import com.choculaterie.vanilib.gui.widget.ToggleButton;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -135,25 +134,25 @@ public class CtrlZScreen extends Screen {
 	}
 
 	@Override
-	public boolean keyPressed(KeyEvent event) {
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 		if (capturing != null) {
-			if (event.isEscape()) {
+			if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
 				cancelCapture();
 			} else {
-				capturingKeys.add(event.key());
+				capturingKeys.add(keyCode);
 			}
 			return true;
 		}
-		return super.keyPressed(event);
+		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 
 	@Override
-	public boolean keyReleased(KeyEvent event) {
+	public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
 		if (capturing != null && !capturingKeys.isEmpty()) {
 			finishCapture();
 			return true;
 		}
-		return super.keyReleased(event);
+		return super.keyReleased(keyCode, scanCode, modifiers);
 	}
 
 	private void cancelCapture() {
@@ -178,27 +177,27 @@ public class CtrlZScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-		boolean handled = super.mouseClicked(event, doubleClick);
-		if (!historyField.isMouseOver(event.x(), event.y())) {
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		boolean handled = super.mouseClicked(mouseX, mouseY, button);
+		if (!historyField.isMouseOver(mouseX, mouseY)) {
 			this.setFocused(null);
 		}
 		return handled;
 	}
 
 	@Override
-	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
 		context.fill(0, 0, this.width, this.height, UITheme.Colors.PANEL_BG);
-		super.extractRenderState(context, mouseX, mouseY, delta);
+		super.render(context, mouseX, mouseY, delta);
 
 		int titleX = (this.width - this.font.width(TITLE)) / 2;
-		context.text(this.font, TITLE, titleX, titleY, UITheme.Colors.TEXT_PRIMARY);
+		context.drawString(this.font, TITLE, titleX, titleY, UITheme.Colors.TEXT_PRIMARY);
 
-		context.text(this.font, "Undo key:", contentX, undoButton.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
-		context.text(this.font, "Redo key:", contentX, redoButton.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
-		context.text(this.font, "History (" + unitLabel(HistorySettings.getUnit()).toLowerCase(Locale.ROOT) + "):",
+		context.drawString(this.font, "Undo key:", contentX, undoButton.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
+		context.drawString(this.font, "Redo key:", contentX, redoButton.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
+		context.drawString(this.font, "History (" + unitLabel(HistorySettings.getUnit()).toLowerCase(Locale.ROOT) + "):",
 			contentX, historyField.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
-		context.text(this.font, "Creative only:", contentX, creativeOnlyToggle.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
+		context.drawString(this.font, "Creative only:", contentX, creativeOnlyToggle.getY() + 6, UITheme.Colors.TEXT_PRIMARY);
 	}
 
 	@Override
@@ -210,7 +209,7 @@ public class CtrlZScreen extends Screen {
 	public void onClose() {
 		CustomTextField.restoreMinecraftCharCallback();
 		if (this.minecraft != null) {
-			this.minecraft.gui.setScreen(null);
+			this.minecraft.setScreen(null);
 		}
 	}
 }

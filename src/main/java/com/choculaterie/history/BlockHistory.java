@@ -4,15 +4,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityProcessor;
+import java.util.function.Function;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -23,8 +21,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.TagValueInput;
-import net.minecraft.world.level.storage.TagValueOutput;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -35,7 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public final class BlockHistory {
-	private static final int QUIET_UPDATE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_SKIP_ALL_SIDEEFFECTS;
+	private static final int QUIET_UPDATE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_SUPPRESS_DROPS | Block.UPDATE_KNOWN_SHAPE;
 	private static final int MAX_DEPTH = 16;
 	private static final long MAX_PENDING_MS = 60_000;
 	private static final int HISTORY_HARD_CAP = 5000;
@@ -50,11 +46,16 @@ public final class BlockHistory {
 	private static long pendingSince;
 	private static int depth = 0;
 	private static boolean applying = false;
+	private static boolean quietRestore = false;
 
 	private BlockHistory() {}
 
 	public static boolean isTracking() {
 		return activeAction != null && !applying;
+	}
+
+	public static boolean isQuietRestore() {
+		return quietRestore;
 	}
 
 	public static void begin() {
@@ -318,16 +319,14 @@ public final class BlockHistory {
 
 	public static CompoundTag snapshotEntity(Entity entity) {
 		try {
-			Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+			ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 			if (id == null) {
 				return null;
 			}
-			try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), com.choculaterie.CtrlZ.LOGGER)) {
-				TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.level().registryAccess());
-				output.putString("id", id.toString());
-				entity.saveWithoutId(output);
-				return output.buildResult();
-			}
+			CompoundTag tag = new CompoundTag();
+			tag.putString("id", id.toString());
+			entity.saveWithoutId(tag);
+			return tag;
 		} catch (Throwable t) {
 			com.choculaterie.CtrlZ.LOGGER.error("Failed to snapshot entity {}", entity, t);
 			return null;
@@ -455,7 +454,12 @@ public final class BlockHistory {
 			}
 		}
 
-		level.setBlock(change.pos(), targetState, QUIET_UPDATE_FLAGS);
+		quietRestore = true;
+		try {
+			level.setBlock(change.pos(), targetState, QUIET_UPDATE_FLAGS);
+		} finally {
+			quietRestore = false;
+		}
 		if (targetNbt != null) {
 			BlockEntity restored = BlockEntity.loadStatic(change.pos(), targetState, targetNbt, level.registryAccess());
 			if (restored != null) {
@@ -549,8 +553,8 @@ public final class BlockHistory {
 
 		if (existing instanceof ServerPlayer player) {
 			if (target != null) {
-				try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(player.problemPath(), com.choculaterie.CtrlZ.LOGGER)) {
-					player.load(TagValueInput.create(reporter, level.registryAccess(), target));
+				try {
+					player.load(target);
 					player.connection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
 					if (player.getHealth() <= 0.0F) {
 						player.die(player.damageSources().genericKill());
@@ -569,7 +573,7 @@ public final class BlockHistory {
 		}
 		if (target != null) {
 			Entity entity = EntityType.loadEntityRecursive(
-				target, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), EntityProcessor.NOP
+				target, level, EntitySpawnReason.COMMAND, Function.identity()
 			);
 			if (entity != null) {
 				if (entity instanceof PrimedTnt tnt && tnt.getFuse() <= 0) {
@@ -594,7 +598,7 @@ public final class BlockHistory {
 			return;
 		}
 		Entity gone = EntityType.loadEntityRecursive(
-			original, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), EntityProcessor.NOP
+			original, level, EntitySpawnReason.COMMAND, Function.identity()
 		);
 		if (gone instanceof ItemEntity itemEntity) {
 			removeMatching(actor, itemEntity.getItem());
