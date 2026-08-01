@@ -17,8 +17,8 @@ public class CtrlZ implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		PayloadTypeRegistry.serverboundPlay().register(UndoRedoPayload.TYPE, UndoRedoPayload.CODEC);
-		PayloadTypeRegistry.serverboundPlay().register(ClearHistoryPayload.TYPE, ClearHistoryPayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(UndoRedoPayload.TYPE, UndoRedoPayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(ClearHistoryPayload.TYPE, ClearHistoryPayload.CODEC);
 
 		ServerPlayNetworking.registerGlobalReceiver(UndoRedoPayload.TYPE, (payload, context) -> {
 			if (payload.redo()) {

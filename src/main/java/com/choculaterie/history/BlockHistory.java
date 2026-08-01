@@ -4,15 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityProcessor;
+import java.util.function.Function;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -318,7 +317,7 @@ public final class BlockHistory {
 
 	public static CompoundTag snapshotEntity(Entity entity) {
 		try {
-			Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+			ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 			if (id == null) {
 				return null;
 			}
@@ -569,7 +568,7 @@ public final class BlockHistory {
 		}
 		if (target != null) {
 			Entity entity = EntityType.loadEntityRecursive(
-				target, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), EntityProcessor.NOP
+				target, level, EntitySpawnReason.COMMAND, Function.identity()
 			);
 			if (entity != null) {
 				if (entity instanceof PrimedTnt tnt && tnt.getFuse() <= 0) {
@@ -594,7 +593,7 @@ public final class BlockHistory {
 			return;
 		}
 		Entity gone = EntityType.loadEntityRecursive(
-			original, level, new EntitySpawnRequest(EntitySpawnReason.COMMAND, false), EntityProcessor.NOP
+			original, level, EntitySpawnReason.COMMAND, Function.identity()
 		);
 		if (gone instanceof ItemEntity itemEntity) {
 			removeMatching(actor, itemEntity.getItem());
