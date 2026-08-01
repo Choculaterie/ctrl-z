@@ -29,7 +29,7 @@
 	"depends": {
 		"fabricloader": ">=0.18.5",
 		"minecraft": ">=1.21 <=1.21.1",
-		"java": ">=25",
+		"java": ">=21",
 		"fabric-api": "*",
 		"vanilib": ">=0.2.0"
 	}
